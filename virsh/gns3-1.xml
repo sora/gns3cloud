@@ -1,0 +1,39 @@
+<domain type='kvm'>
+	<name>gns3-1</name>
+	<memory unit='GB'>8</memory>
+	<vcpu>5</vcpu>
+	<os>
+		<type arch='x86_64'>hvm</type>
+		<boot dev='hd'/>
+	</os>
+	<clock sync="localtime"/>
+	<on_poweroff>destroy</on_poweroff>
+	<on_reboot>restart</on_reboot>
+	<on_crash>destroy</on_crash>
+	<devices>
+		<emulator>/usr/bin/kvm</emulator>
+		<disk type='file' device='cdrom'>
+			<driver name='qemu' type='raw'/>
+			<source file='/home/user/wrk/config.img'/>
+			<backingStore/>
+			<target dev='hdc' bus='ide'/>
+			<readonly/>
+		</disk>
+		<disk type='file' device='disk'>
+			<driver name='qemu' type='qcow2'/>
+			<source file='/home/user/wrk/ubuntu.qcow2'/>
+			<target dev='vda' bus='virtio'/>
+		</disk>
+		<interface type='bridge'>
+			<source bridge='br0'/>
+			<model type='virtio'/>
+		</interface>
+		<serial type='pty'>
+			<target port='0'/>
+		</serial>
+		<console type='pty'>
+			<target type='serial' port='0'/>
+		</console>
+	</devices>
+</domain>
+

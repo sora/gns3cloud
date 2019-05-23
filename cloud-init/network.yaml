@@ -1,0 +1,12 @@
+version: 1
+config:
+  - type: nameserver
+    address:
+      - 8.8.8.8
+  - type: physical
+    name: enp0s2
+    subnets:
+     - control: auto
+       type: static
+       address: {{ IP_ADDRESS }}
+       gateway: {{ IP_ADDRESS }}

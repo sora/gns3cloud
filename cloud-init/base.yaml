@@ -1,0 +1,48 @@
+#cloud-config
+password: {{ PASSWORD }}
+chpasswd: { expire: False }
+users:
+        - default
+        - name: gns3
+          primary_group: gns3
+          password: {{ PASSWORD }}
+          groups: users,libvirt,kvm
+          shell: /bin/bash
+          # sudo: ['ALL=(ALL) NOPASSWD:ALL']
+
+ssh_pwauth: True
+apt_sources:
+        - source: "ppa:gns3/ppa"
+package_upgrade: true
+packages:
+- vim
+- gns3-gui
+write_files:
+        # https://github.com/GNS3/gns3-server/blob/master/init/gns3.service.systemd
+        - path: /lib/systemd/system/gns3.service
+          permissions: 0644
+          owner: root:root
+          content: |
+                [Unit]
+                Description=GNS3 server
+                Wants=network-online.target
+                After=network.target network-online.target
+
+                [Service]
+                Type=forking
+                User=gns3
+                Group=gns3
+                PermissionsStartOnly=true
+                ExecStartPre=/bin/mkdir -p /var/log/gns3 /var/run/gns3
+                ExecStartPre=/bin/chown -R gns3:gns3 /var/log/gns3 /var/run/gns3
+                ExecStart=/usr/bin/gns3server --log /var/log/gns3/gns3.log --pid /var/run/gns3/gns3.pid --daemon
+                Restart=on-abort
+                PIDFile=/var/run/gns3/gns3.pid
+
+                [Install]
+                WantedBy=multi-user.target
+
+runcmd:
+        - [ systemctl, enable, gns3.service ]
+        - [ systemctl, start, gns3.service ]
+
