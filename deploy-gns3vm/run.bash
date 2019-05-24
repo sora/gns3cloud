@@ -7,5 +7,5 @@ bash scripts/cloud-localds.bash
 
 sudo virsh destroy gns3-1
 sudo virsh undefine gns3-1
-sudo virsh define virsh/gns3-1.xml
+sudo virsh define virt/gns3-1.xml
 sudo virsh start gns3-1
