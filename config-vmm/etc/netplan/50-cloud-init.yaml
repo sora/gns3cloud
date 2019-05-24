@@ -1,0 +1,29 @@
+network:
+    ethernets:
+        eno1:
+            nameservers:
+                addresses:
+                - 8.8.8.8
+        eno3:
+            dhcp4: false
+            #addresses:
+            #- IP.ADD.RE.SS/24
+            #gateway4: IP.ADD.RE.SS
+            #nameservers:
+            #    addresses:
+            #    - 8.8.8.8
+    bridges:
+        br0:
+            interfaces:
+                - eno3
+            dhcp4: false
+            addresses:
+            - IP.ADD.RE.SS/24
+            gateway4: IP.ADD.RE.SS
+            nameservers:
+                addresses:
+                - 8.8.8.8
+            parameters:
+                stp: false
+            optional: true
+    version: 2
