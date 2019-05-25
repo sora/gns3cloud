@@ -1,7 +1,7 @@
 <domain type='kvm'>
-	<name>gns3-1</name>
-	<memory unit='GB'>8</memory>
-	<vcpu>5</vcpu>
+	<name>{{ host.name }}</name>
+	<memory unit='GB'>{{ host.memory_gb }}</memory>
+	<vcpu>{{ host.vcpu }}</vcpu>
 	<os>
 		<type arch='x86_64'>hvm</type>
 		<boot dev='hd'/>
