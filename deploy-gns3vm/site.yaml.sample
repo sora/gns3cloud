@@ -1,0 +1,14 @@
+vm_list:
+  "1-1":
+    host:
+      name: "gns3-1"
+      vcpu: 4
+      memory_gb: 8
+      disk_gb: 30
+      ip: 192.168.100.100/24
+      gateway: 192.168.100.1
+    users:
+      "ubuntu":
+        password: "PASS_WORD"
+      "gns3":
+        password: "PASS_WORD2"

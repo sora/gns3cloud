@@ -8,5 +8,5 @@ config:
     subnets:
      - control: auto
        type: static
-       address: {{ IP_ADDRESS }}
-       gateway: {{ IP_ADDRESS }}
+       address: {{ host.ip }}
+       gateway: {{ host.gateway }}

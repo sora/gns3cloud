@@ -1,11 +1,11 @@
 #cloud-config
-password: {{ PASSWORD }}
+password: {{ users.ubuntu.password }}
 chpasswd: { expire: False }
 users:
         - default
         - name: gns3
           primary_group: gns3
-          password: {{ PASSWORD }}
+          password: {{ users.gns3.password }}
           groups: users,libvirt,kvm
           shell: /bin/bash
           # sudo: ['ALL=(ALL) NOPASSWD:ALL']
