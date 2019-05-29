@@ -57,16 +57,19 @@ class Config:
         for vm_id, vm_config in vm_list.items():
             output_dir = self.make_output_dir(vm_id)
             for config in vm_config.items():
-                config_name = config[0]
+                config_name = config[0]  # tsukattenai
                 settings = config[1]
-                if config_name == 'qemu':
+                config_type = settings['type']
+                if config_type == "command":
                     self.build_deploy_qemu(output_dir, settings)
-                else:
+                elif config_type == "file":
                     self.build_deploy_file(output_dir, settings)
+                else:
+                    print("unknown config_type: ", config_type)
+                    sys.exit(1)
+
 
     def build_deploy_qemu(self, out_dir, settings):
-        print('qemu')
-
         os_img_path = settings['setting']['os_image_path']
         qcow2_disk = settings['setting']['qcow2_disk_name']
         disk_size = settings['setting']['disk_gb']
