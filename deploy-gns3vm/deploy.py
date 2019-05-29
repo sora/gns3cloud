@@ -1,21 +1,23 @@
 import os, sys, time
 import subprocess
+import pathlib
 import shutil
 
-from jinja2 import Template, Environment, FileSystemLoader
+from jinja2 import Template, Environment, FileSystemLoader, DebugUndefined
 import yaml
 
 class Config:
     def __init__(self):
-        #self.working_dir = '/tmp/gns3cloud-%d-%f' % (os.getpid(), time.time())
-        self.working_dir = './run'
-        print(self.working_dir)
+        self.working_dir = ''
 
     def open(self, config_file='site.yaml'):
         vm_list = dict()
         with open(config_file, 'r') as site_file:
             site_data = yaml.safe_load(site_file)
             vm_list = site_data['vm_list']
+            temp_path = pathlib.Path(site_data['deploy_dir'])
+            self.working_dir = str(temp_path.resolve())
+            print(self.working_dir)
         return vm_list
 
     def make_work_dir(self, work_dir=''):
@@ -49,29 +51,15 @@ class Config:
     def build_deploy_file(self, out_dir, settings):
         env = Environment(loader = FileSystemLoader('.'))
         template = env.get_template("%s/%s" % (settings['dir'], settings['file']))
-        output = template.render(settings['setting'])
+        tmp = settings['setting']
+        tmp.update({ 'deploy_dir': self.working_dir })
+        output = template.render(tmp)
         with open("%s/%s" % (out_dir, settings['file']), 'w') as f:
             f.write(output)
 
-    def build_deploy_file_all(self, vm_list):
-        for vm_id, vm_config in vm_list.items():
-            output_dir = self.make_output_dir(vm_id)
-            for config in vm_config.items():
-                config_name = config[0]  # tsukattenai
-                settings = config[1]
-                config_type = settings['type']
-                if config_type == "command":
-                    self.build_deploy_qemu(output_dir, settings)
-                elif config_type == "file":
-                    self.build_deploy_file(output_dir, settings)
-                else:
-                    print("unknown config_type: ", config_type)
-                    sys.exit(1)
-
-
     def build_deploy_qemu(self, out_dir, settings):
         os_img_path = settings['setting']['os_image_path']
-        qcow2_disk = settings['setting']['qcow2_disk_name']
+        qcow2_disk = settings['setting']['qcow2_disk_file']
         disk_size = settings['setting']['disk_gb']
 
         if os.path.isfile(os_img_path):
@@ -89,7 +77,7 @@ class Config:
                 out_path ])
         except:
             print("command faild: qemu-img convert")
-            sys.exit(1)
+            #sys.exit(1)
 
         # command
         try:
@@ -100,13 +88,29 @@ class Config:
                 disk_size ])
         except:
             print("command faild: qemu-img resize")
-            sys.exit(1)
+            #sys.exit(1)
+
+    def build_deploy_file_all(self, vm_list):
+        for vm_id, vm_config in vm_list.items():
+            output_dir = self.make_output_dir(vm_id)
+            for config in vm_config.items():
+                config_name = config[0]  # tsukattenai
+                # print(config_name)
+                settings = config[1]
+                config_type = settings['type']
+                if config_type == "command":
+                    self.build_deploy_qemu(output_dir, settings)
+                elif config_type == "file":
+                    self.build_deploy_file(output_dir, settings)
+                else:
+                    print("unknown config_type: ", config_type)
+                    sys.exit(1)
 
 def main():
     config = Config()
-    config.make_work_dir()
-
     vm_list = config.open('site.yaml')
+
+    config.make_work_dir()
 
     config.build_deploy_file_all(vm_list)
 
