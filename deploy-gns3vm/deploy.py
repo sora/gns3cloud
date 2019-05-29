@@ -94,7 +94,8 @@ class GNS3_deploy:
             result = subprocess.check_call([
                 "qemu-img",
                 "convert",
-                "-O qcow2",
+                "-O",
+                "qcow2",
                 os_img_path,
                 out_path ])
         except:
@@ -103,6 +104,11 @@ class GNS3_deploy:
 
         # command
         try:
+            print([
+                "qemu-img",
+                "resize",
+                out_path,
+                disk_size ])
             result = subprocess.check_call([
                 "qemu-img",
                 "resize",

@@ -1,19 +1,34 @@
+deploy_dir: "./run"
+download:
+  output_dir: "./img"
+  targets:
+    os_image:
+      file_name: ubuntu-18.04-server-cloudimg-amd64.img
+      url: https://cloud-images.ubuntu.com/releases/18.04/release
+    vyos_disk:
+      file_name: empty8G.qcow2
+      url: https://downloads.sourceforge.net/project/gns-3/Empty%20Qemu%20disk
+    vyos_image:
+      file_name: vyos-1.1.8-amd64.iso
+      url: http://packages.vyos.net/iso/release/1.1.8
 vm_list:
-  "9183cfc3-9de7-4dfc-b1bb-00526c5175b5":
+  "1-1":
     qemu:
       type: command
       dir: ''
       file: ''
       setting:
         os_image_path: "img/ubuntu-18.04-server-cloudimg-amd64.img"
-        qcow2_disk_name: "ubuntu.qcow2"
-        disk_gb: 30
+        qcow2_disk_file: ubuntu.qcow2
+        disk_gb: 30G
     virt:
       type: file
       dir: virt
       file: gns3.xml
       setting:
         vm_name: "gns3-1"
+        config_img_file: config.img
+        qcow2_disk_file: ubuntu.qcow2
         vcpu: 4
         memory_gb: 8
         config_path: ''
@@ -25,9 +40,9 @@ vm_list:
       setting:
         users:
           "ubuntu":
-            password: "PA_SS_WO_RD"
+            password: "PA_SS_WD"
           "gns3":
-            password: "USER_PA_SS_WO_RD"
+            password: "PA_SS_WD"
     cloud_init_network:
       type: file
       dir: cloud-init
@@ -36,21 +51,23 @@ vm_list:
         ip: 192.168.100.101/24
         gateway: 192.168.100.1
         dns_ip: 8.8.8.8
-  "fe485215-30aa-4069-91bf-fe54115396cc":
+  "1-2":
     qemu:
       type: command
       dir: ''
       file: ''
       setting:
         os_image_path: "img/ubuntu-18.04-server-cloudimg-amd64.img"
-        qcow2_disk_name: "ubuntu.qcow2"
-        disk_gb: 30
+        qcow2_disk_file: ubuntu.qcow2
+        disk_gb: 30G
     virt:
       type: file
       dir: virt
       file: gns3.xml
       setting:
         vm_name: "gns3-2"
+        config_img_file: config.img
+        qcow2_disk_file: ubuntu.qcow2
         vcpu: 4
         memory_gb: 8
         config_path: ''
@@ -62,9 +79,9 @@ vm_list:
       setting:
         users:
           "ubuntu":
-            password: "PA_SS_WO_RD"
+            password: "PA_SS_WD"
           "gns3":
-            password: "USER_PA_SS_WO_RD"
+            password: "PA_SS_WD"
     cloud_init_network:
       type: file
       dir: cloud-init
@@ -73,41 +90,3 @@ vm_list:
         ip: 192.168.100.102/24
         gateway: 192.168.100.1
         dns_ip: 8.8.8.8
-  "b0ce2d87-fb61-4d96-80ea-6280ad20c025":
-    qemu:
-      type: command
-      dir: ''
-      file: ''
-      setting:
-        os_image_path: "img/ubuntu-18.04-server-cloudimg-amd64.img"
-        qcow2_disk_name: "ubuntu.qcow2"
-        disk_gb: 30
-    virt:
-      type: file
-      dir: virt
-      file: gns3.xml
-      setting:
-        vm_name: "gns3-3"
-        vcpu: 4
-        memory_gb: 8
-        config_path: ''
-        disk_path: ''
-    cloud_init_base:
-      type: file
-      dir: cloud-init
-      file: base.yaml
-      setting:
-        users:
-          "ubuntu":
-            password: "PA_SS_WO_RD"
-          "gns3":
-            password: "USER_PA_SS_WO_RD"
-    cloud_init_network:
-      type: file
-      dir: cloud-init
-      file: network.yaml
-      setting:
-        ip: 192.168.100.103/24
-        gateway: 192.168.100.1
-        dns_ip: 8.8.8.8
-
