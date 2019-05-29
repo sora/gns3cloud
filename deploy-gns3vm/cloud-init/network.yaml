@@ -2,11 +2,11 @@ version: 1
 config:
   - type: nameserver
     address:
-      - 8.8.8.8
+      - {{ dns_ip }}
   - type: physical
     name: enp0s2
     subnets:
      - control: auto
        type: static
-       address: {{ host.ip }}
-       gateway: {{ host.gateway }}
+       address: {{ ip }}
+       gateway: {{ gateway }}
