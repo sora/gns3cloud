@@ -13,6 +13,7 @@ $ sudo bash ./setup.bash
 
 # edit config file: site.yaml
 $ cp site.yaml.sample site.yaml
+$ vim site.yaml
 
 # delete all GNS3 vms and re-deploy all vms
 $ python3 ./deploy.py
