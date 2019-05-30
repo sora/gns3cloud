@@ -14,14 +14,14 @@
 		<emulator>/usr/bin/kvm</emulator>
 		<disk type='file' device='cdrom'>
 			<driver name='qemu' type='raw'/>
-			<source file='{{ deploy_dir }}/{{ config_img_file }}' />
+			<source file='{{ output_dir }}/{{ config_img_file }}' />
 			<backingStore/>
 			<target dev='hdc' bus='ide'/>
 			<readonly/>
 		</disk>
 		<disk type='file' device='disk'>
 			<driver name='qemu' type='qcow2'/>
-			<source file='{{ deploy_dir }}/{{ qcow2_disk_file }}' />
+			<source file='{{ output_dir }}/{{ qcow2_disk_file }}' />
 			<target dev='vda' bus='virtio'/>
 		</disk>
 		<interface type='bridge'>
