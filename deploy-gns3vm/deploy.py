@@ -3,7 +3,8 @@ import subprocess
 import pathlib
 import shutil
 
-from jinja2 import Template, Environment, FileSystemLoader, DebugUndefined
+from jinja2 import Template, Environment, FileSystemLoader
+import libvirt
 import yaml
 
 class GNS3_deploy:
@@ -153,7 +154,7 @@ class GNS3_deploy:
                     print("unknown config_type: ", config_type)
                     sys.exit(1)
 
-    def deploy_all(self, vm_list):
+    def build_vm_image_all(self, vm_list):
         for vm_id, vm_config in vm_list.items():
             output_dir = self.get_output_dir(vm_id)
             for config in vm_config.items():
@@ -170,6 +171,86 @@ class GNS3_deploy:
                 else:
                     print("unknown config_type: ", config_type)
                     sys.exit(1)
+
+    def get_vm_status(self, conn, vm_name):
+        sts = ('no sate', 'running', 'blocked', 'paused', 'shutting down', 'shut off', 'crushed')
+        ret = -1
+        try:
+            vm = conn.lookupByName(vm_name)
+            print(vm_name, "status:", sts[vm.info()[0]])
+            ret = vm.info()[0]
+        except:
+            print("not found the VM:", vm_name)
+        return ret
+
+    def delete_vm(self, conn, vm_name, vm_stat):
+        if vm_stat == 1:
+            try:
+                vm = conn.lookupByName(vm_name)
+                vm.destroy()
+            except:
+                print("cannot destroy the vm", vm_name)
+                sys.exit(1)
+
+        if vm_stat == 5:
+            try:
+                vm = conn.lookupByName(vm_name)
+                vm.undefine()
+            except:
+                print("cannot undefine the vm", vm_name)
+                sys.exit(1)
+        else:
+            print("unknown vm status", vm_stat, vm_stat)
+
+
+
+    def define_vm(self, conn, vm_name, vm_file):
+        try:
+            f = open(vm_file, 'r')
+            xml = f.read()
+        except:
+            print("cannot open kvm xml file", vm_name)
+            sys.exit(1)
+
+        try:
+            vm = conn.defineXML(xml)
+        except:
+            print("cannot define the vm", vm_name)
+            sys.exit(1)
+
+    def start_vm(self, conn, vm_name):
+        try:
+            vm = conn.lookupByName(vm_name)
+        except:
+            print("cannot lookup the vm", vm_name)
+            sys.exit(1)
+
+        vm_stat = self.get_vm_status(conn, vm_name)
+        if vm_stat != 5:
+            print("unexpected vm status", vm_name, vm_stat)
+
+        try:
+            vm.create()
+        except:
+            print("cannot start the vm", vm_name)
+            sys.exit(1)
+
+
+    def deploy_vm_all(self, vm_list):
+        conn = libvirt.open("qemu:///system")
+        for vm_id, vm_config in vm_list.items():
+            output_dir = self.get_output_dir(vm_id)
+
+            vm_name = vm_config['virt']['setting']['vm_name']
+            vm_file = "%s/%s" % (output_dir, vm_config['virt']['file'])
+
+            vm_stat = self.get_vm_status(conn, vm_name)
+
+            if vm_stat > -1:
+                self.delete_vm(conn, vm_name, vm_stat)
+
+            self.define_vm(conn, vm_name, vm_file)
+            self.start_vm(conn, vm_name)
 
 
 def main():
@@ -189,11 +270,14 @@ def main():
     print("Make output directory ...")
     gns3.make_output_dir_all(vm_list)
 
-    print("Make config files ...")
+    print("Build config files ...")
     gns3.build_deploy_file_all(vm_list)
 
-    print("Run deploy commands ...")
-    gns3.deploy_all(vm_list)
+    print("Build vm images ...")
+    gns3.build_vm_image_all(vm_list)
+
+    #print("Deploy VMs ...")
+    #gns3.deploy_vm_all(vm_list)
 
 if __name__ == "__main__":
     main()
