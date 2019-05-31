@@ -18,6 +18,11 @@ packages:
 - vim
 - gns3-gui
 write_files:
+        - path: /etc/apt/apt.conf.d/02proxy
+          permissions: 0644
+          owner: root:root
+          content: |
+                Acquire::http::Proxy "http://{{ proxy_server.ip }}:{{ proxy_server.port }}/";
         # https://github.com/GNS3/gns3-server/blob/master/init/gns3.service.systemd
         - path: /lib/systemd/system/gns3.service
           permissions: 0644

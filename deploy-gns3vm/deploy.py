@@ -11,6 +11,7 @@ class GNS3_deploy:
     def __init__(self):
         self.working_dir = ''
         self.download_list = dict()
+        self.apt_proxy_server = dict()
 
     def open(self, config_file='site.yaml'):
         vm_list = dict()
@@ -21,6 +22,7 @@ class GNS3_deploy:
             self.working_dir = str(temp_path.resolve())
             print(self.working_dir)
             self.download_list = site_data['download_images']
+            self.apt_proxy_server = site_data['apt_proxy']
         return vm_list
 
     def is_work_dir(self):
@@ -104,6 +106,7 @@ class GNS3_deploy:
         template = env.get_template("%s/%s" % (settings['dir'], settings['file']))
         tmp = settings['setting']
         tmp.update({ 'output_dir': out_dir })
+        tmp.update(self.apt_proxy_server)
         output = template.render(tmp)
         with open("%s/%s" % (out_dir, settings['file']), 'w') as f:
             f.write(output)
@@ -172,37 +175,57 @@ class GNS3_deploy:
                     print("unknown config_type: ", config_type)
                     sys.exit(1)
 
-    def get_vm_status(self, conn, vm_name):
+    def get_vm_status(self, conn, vm, vm_name):
         sts = ('no sate', 'running', 'blocked', 'paused', 'shutting down', 'shut off', 'crushed')
         ret = -1
         try:
-            vm = conn.lookupByName(vm_name)
-            print(vm_name, "status:", sts[vm.info()[0]])
             ret = vm.info()[0]
+            print(vm_name, "status:", sts[ret])
         except:
             print("not found the VM:", vm_name)
         return ret
 
-    def delete_vm(self, conn, vm_name, vm_stat):
-        if vm_stat == 1:
+    def destroy_vm(self, conn, vm, vm_name):
+        status = self.get_vm_status(conn, vm, vm_name)
+        if status == 1:
             try:
-                vm = conn.lookupByName(vm_name)
+                print("Destroy vm", vm_name)
                 vm.destroy()
             except:
                 print("cannot destroy the vm", vm_name)
                 sys.exit(1)
 
-        if vm_stat == 5:
+            timeout = 10
+            while True:
+                status = self.get_vm_status(conn, vm, vm_name)
+                if status == 5:
+                    break
+                time.sleep(1)
+                timeout -= 1
+                if timeout == 0:
+                    print("timeout: destroy_vm")
+                    sys.exit(1)
+
+    def undefine_vm(self, conn, vm, vm_name):
+        status = self.get_vm_status(conn, vm, vm_name)
+        if status >= 0:
             try:
-                vm = conn.lookupByName(vm_name)
+                print("Undefine vm", vm_name)
                 vm.undefine()
             except:
                 print("cannot undefine the vm", vm_name)
                 sys.exit(1)
-        else:
-            print("unknown vm status", vm_stat, vm_stat)
 
-
+            timeout = 10
+            while True:
+                status = self.get_vm_status(conn, vm, vm_name)
+                if status == -1:
+                    break
+                time.sleep(1)
+                timeout -= 1
+                if timeout == 0:
+                    print("timeout: undefine_vm")
+                    sys.exit(1)
 
     def define_vm(self, conn, vm_name, vm_file):
         try:
@@ -213,28 +236,59 @@ class GNS3_deploy:
             sys.exit(1)
 
         try:
+            print("Define vm", vm_name)
             vm = conn.defineXML(xml)
         except:
             print("cannot define the vm", vm_name)
             sys.exit(1)
 
-    def start_vm(self, conn, vm_name):
-        try:
-            vm = conn.lookupByName(vm_name)
-        except:
-            print("cannot lookup the vm", vm_name)
-            sys.exit(1)
+        timeout = 10
+        while True:
+            status = self.get_vm_status(conn, vm, vm_name)
+            if status == 5:
+                break
+            time.sleep(1)
+            timeout -= 1
+            if timeout == 0:
+                print("timeout: define_vm")
+                sys.exit(1)
 
-        vm_stat = self.get_vm_status(conn, vm_name)
-        if vm_stat != 5:
-            print("unexpected vm status", vm_name, vm_stat)
+        return vm
+
+    def create_vm(self, conn, vm, vm_name):
+        status = self.get_vm_status(conn, vm, vm_name)
+        if status != 5:
+            print("unexpected vm status", vm_name, status)
 
         try:
+            print("Create vm", vm_name)
             vm.create()
         except:
             print("cannot start the vm", vm_name)
             sys.exit(1)
 
+        timeout = 10
+        while True:
+            status = self.get_vm_status(conn, vm, vm_name)
+            if status == 1:
+                break
+            time.sleep(1)
+            timeout -= 1
+            if timeout == 0:
+                print("timeout: define_vm")
+                sys.exit(1)
+
+
+    def delete_vm_all(self, vm_list):
+        conn = libvirt.open("qemu:///system")
+        for vm_id, vm_config in vm_list.items():
+            vm_name = vm_config['virt']['setting']['vm_name']
+            try:
+                vm = conn.lookupByName(vm_name)
+            except:
+                print("VM", vm_name, "not found")
+            self.destroy_vm(conn, vm, vm_name)
+            self.undefine_vm(conn, vm, vm_name)
 
     def deploy_vm_all(self, vm_list):
         conn = libvirt.open("qemu:///system")
@@ -243,14 +297,8 @@ class GNS3_deploy:
 
             vm_name = vm_config['virt']['setting']['vm_name']
             vm_file = "%s/%s" % (output_dir, vm_config['virt']['file'])
-
-            vm_stat = self.get_vm_status(conn, vm_name)
-
-            if vm_stat > -1:
-                self.delete_vm(conn, vm_name, vm_stat)
-
-            self.define_vm(conn, vm_name, vm_file)
-            self.start_vm(conn, vm_name)
+            newvm = self.define_vm(conn, vm_name, vm_file)
+            self.create_vm(conn, newvm, vm_name)
 
 
 def main():
@@ -264,6 +312,9 @@ def main():
     print("Downloading images ...")
     gns3.download_images()
 
+    print("Delete all running VMs ...")
+    gns3.delete_vm_all(vm_list)
+
     print("Remove output directory ...")
     gns3.remove_output_dir_all(vm_list)
 
@@ -276,8 +327,8 @@ def main():
     print("Build vm images ...")
     gns3.build_vm_image_all(vm_list)
 
-    #print("Deploy VMs ...")
-    #gns3.deploy_vm_all(vm_list)
+    print("Deploy all VMs ...")
+    gns3.deploy_vm_all(vm_list)
 
 if __name__ == "__main__":
     main()

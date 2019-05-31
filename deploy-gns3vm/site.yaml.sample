@@ -11,6 +11,10 @@ download_images:
     vyos_image:
       file_name: vyos-1.1.8-amd64.iso
       url: http://packages.vyos.net/iso/release/1.1.8
+apt_proxy:
+  proxy_server:
+    ip: 192.168.0.200
+    port: 3142
 vm_list:
   "1-1":
     virt:
@@ -30,15 +34,15 @@ vm_list:
       setting:
         users:
           ubuntu:
-            password: PASS_WO_RD
+            password: PA_SS_WO_RD
           gns3:
-            password: GNS3_VM_PASS_WD
+            password: GNS3_PASS_WORD
     cloud_init_network:
       type: file
       dir: cloud-init
       file: network.yaml
       setting:
-        ip: 192.168.100.101/24
+        ip: 192.168.100.100/24
         gateway: 192.168.100.1
         dns_ip: 8.8.8.8
     qemu:
@@ -71,15 +75,15 @@ vm_list:
       setting:
         users:
           ubuntu:
-            password: PASS_WO_RD
+            password: PA_SS_WO_RD
           gns3:
-            password: GNS3_VM_PASS_WD
+            password: GNS3_PASS_WORD
     cloud_init_network:
       type: file
       dir: cloud-init
       file: network.yaml
       setting:
-        ip: 192.168.100.102/24
+        ip: 192.168.100.101/24
         gateway: 192.168.100.1
         dns_ip: 8.8.8.8
     qemu:
@@ -112,15 +116,15 @@ vm_list:
       setting:
         users:
           ubuntu:
-            password: PASS_WO_RD
+            password: PA_SS_WO_RD
           gns3:
-            password: GNS3_VM_PASS_WD
+            password: GNS3_PASS_WORD
     cloud_init_network:
       type: file
       dir: cloud-init
       file: network.yaml
       setting:
-        ip: 192.168.100.103/24
+        ip: 192.168.100.102/24
         gateway: 192.168.100.1
         dns_ip: 8.8.8.8
     qemu:
@@ -153,16 +157,15 @@ vm_list:
       setting:
         users:
           ubuntu:
-            password: PASS_WO_RD
+            password: PA_SS_WO_RD
           gns3:
-            password: gns3aitac
-            password: GNS3_VM_PASS_WD
+            password: GNS3_PASS_WORD
     cloud_init_network:
       type: file
       dir: cloud-init
       file: network.yaml
       setting:
-        ip: 192.168.100.104/24
+        ip: 192.168.100.103/24
         gateway: 192.168.100.1
         dns_ip: 8.8.8.8
     qemu:
@@ -177,3 +180,4 @@ vm_list:
         cloud_init_network_file: network.yaml
         cloud_init_base_file: base.yaml
         config_img_file: config.img
+
