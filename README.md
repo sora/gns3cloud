@@ -6,12 +6,15 @@
 * GNS3 resource Manager: 1 host
   - OS: ubuntu 18.04
   - services:
-    - apt-cacher-ng service
+    - apt-cacher-ng server
       - port: 3142
-    - GNS3 resource service :Todo
+    - GNS3 resource server :Todo
       - port: 443
 * VM: 1~ hosts
   - OS: ubuntu 18.04
+  - services:
+    - GNS3 server
+      - port: 3080
 
 ## Quick start
 
