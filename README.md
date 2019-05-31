@@ -3,9 +3,14 @@
 * VMM: 1 host
   - OS: ubuntu 18.04
   - KVM (need Nested VM feature)
-* GNS3 resource Manager (and apt-cacher-ng service for VMs): 1 host
+* GNS3 resource Manager: 1 host
   - OS: ubuntu 18.04
-* VM: many hosts
+  - services:
+    - apt-cacher-ng service
+      - port: 3142
+    - GNS3 resource service :Todo
+      - port: 443
+* VM: 1~ hosts
   - OS: ubuntu 18.04
 
 ## Quick start
@@ -44,7 +49,7 @@ $ cat /sys/module/kvm_intel/parameters/nested
 Y
 
 # edit config file: site.yaml
-# Should edit IP address and ubuntu and gns3 user password
+# Should edit vcpu, memory, IP address and ubuntu and gns3 user password
 $ cp site.yaml.sample site.yaml
 $ vim site.yaml
 
