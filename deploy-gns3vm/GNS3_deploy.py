@@ -13,7 +13,7 @@ class GNS3_deploy:
         self.download_list = dict()
         self.apt_proxy_server = dict()
 
-    def open(self, config_file='site.yaml'):
+    def open(self, config_file):
         vm_list = dict()
         with open(config_file, 'r') as site_file:
             site_data = yaml.safe_load(site_file)
@@ -287,6 +287,7 @@ class GNS3_deploy:
                 vm = conn.lookupByName(vm_name)
             except:
                 print("VM", vm_name, "not found")
+                return
             self.destroy_vm(conn, vm, vm_name)
             self.undefine_vm(conn, vm, vm_name)
 

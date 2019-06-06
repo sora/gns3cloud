@@ -1,9 +1,11 @@
 import GNS3_deploy
 
 def main():
+    config_name = 'site.yaml'
+
     gns3 = GNS3_deploy.GNS3_deploy()
 
-    vm_list = gns3.open('site.yaml')
+    vm_list = gns3.open(config_name)
 
     if not gns3.is_work_dir():
         print("Make working directory ...")

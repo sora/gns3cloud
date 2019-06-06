@@ -50,4 +50,5 @@ write_files:
 runcmd:
         - [ systemctl, enable, gns3.service ]
         - [ systemctl, start, gns3.service ]
-
+        - [ chmod, +x, /usr/bin/ubridge ]
+        - [ adduser, gns3, ubridge ]
