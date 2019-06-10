@@ -52,3 +52,7 @@ runcmd:
         - [ systemctl, start, gns3.service ]
         - [ chmod, +x, /usr/bin/ubridge ]
         - [ adduser, gns3, ubridge ]
+        - [ wget, "http://{{ proxy_server.ip }}:8000/GNS3.tar.gz", -O, /home/gns3/GNS3.tar.gz ]
+        - [ rm, -rf, /home/gns3/GNS3 ]
+        - [ tar, zxf, /home/gns3/GNS3.tar.gz, -C, /home/gns3 ]
+        - [ systemctl, restart, gns3.service ]

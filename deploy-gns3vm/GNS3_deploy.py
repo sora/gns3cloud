@@ -54,6 +54,15 @@ class GNS3_deploy:
     def get_output_dir(self, vmid):
         return "%s/%s" % (self.working_dir, vmid)
 
+    def remove_output_dir(self, vm_id, vm_config):
+        output_dir = self.get_output_dir(vm_id)
+        if os.path.isdir(output_dir):
+            try:
+                shutil.rmtree(output_dir)
+            except:
+                print("cannot remove the output directory")
+                sys.exit(1)
+
     def remove_output_dir_all(self, vm_list):
         for vm_id, vm_config in vm_list.items():
             output_dir = self.get_output_dir(vm_id)
@@ -101,7 +110,7 @@ class GNS3_deploy:
             else:
                 print("File exists:", target['file_name'])
 
-    def build_deploy_file(self, out_dir, settings):
+    def build_deploy_file_one(self, out_dir, settings):
         env = Environment(loader = FileSystemLoader('.'))
         template = env.get_template("%s/%s" % (settings['dir'], settings['file']))
         tmp = settings['setting']
@@ -141,6 +150,21 @@ class GNS3_deploy:
         for vm_id, vm_config in vm_list.items():
             output_dir = self.make_output_dir(vm_id)
 
+    def build_deploy_file(self, vm_id, vm_config):
+        output_dir = self.get_output_dir(vm_id)
+        for config in vm_config.items():
+            config_name = config[0]  # tsukattenai
+            # print(config_name)
+            settings = config[1]
+            config_type = settings['type']
+            if config_type == "command":
+                continue
+            elif config_type == "file":
+                self.build_deploy_file_one(output_dir, settings)
+            else:
+                print("unknown config_type: ", config_type)
+                sys.exit(1)
+
     def build_deploy_file_all(self, vm_list):
         for vm_id, vm_config in vm_list.items():
             output_dir = self.get_output_dir(vm_id)
@@ -152,10 +176,27 @@ class GNS3_deploy:
                 if config_type == "command":
                     continue
                 elif config_type == "file":
-                    self.build_deploy_file(output_dir, settings)
+                    self.build_deploy_file_one(output_dir, settings)
                 else:
                     print("unknown config_type: ", config_type)
                     sys.exit(1)
+
+    def build_vm_image(self, vm_id, vm_config):
+        output_dir = self.get_output_dir(vm_id)
+        for config in vm_config.items():
+            config_name = config[0]
+            settings = config[1]
+            config_type = settings['type']
+            if config_type == "command":
+                if config_name == 'qemu':
+                    self.build_deploy_qemu(output_dir, settings)
+                elif config_name == 'cloud_init_config_img':
+                    self.build_deploy_cloud_init_config_img(output_dir, settings)
+            elif config_type == "file":
+                continue
+            else:
+                print("unknown config_type: ", config_type)
+                sys.exit(1)
 
     def build_vm_image_all(self, vm_list):
         for vm_id, vm_config in vm_list.items():
@@ -278,6 +319,16 @@ class GNS3_deploy:
                 print("timeout: define_vm")
                 sys.exit(1)
 
+    def delete_vm(self, vm_id, vm_config):
+        conn = libvirt.open("qemu:///system")
+        vm_name = vm_config['virt']['setting']['vm_name']
+        try:
+            vm = conn.lookupByName(vm_name)
+        except:
+            print("VM", vm_name, "not found")
+            return
+        self.destroy_vm(conn, vm, vm_name)
+        self.undefine_vm(conn, vm, vm_name)
 
     def delete_vm_all(self, vm_list):
         conn = libvirt.open("qemu:///system")
@@ -290,6 +341,14 @@ class GNS3_deploy:
                 return
             self.destroy_vm(conn, vm, vm_name)
             self.undefine_vm(conn, vm, vm_name)
+
+    def deploy_vm(self, vm_id, vm_config):
+        conn = libvirt.open("qemu:///system")
+        output_dir = self.get_output_dir(vm_id)
+        vm_name = vm_config['virt']['setting']['vm_name']
+        vm_file = "%s/%s" % (output_dir, vm_config['virt']['file'])
+        newvm = self.define_vm(conn, vm_name, vm_file)
+        self.create_vm(conn, newvm, vm_name)
 
     def deploy_vm_all(self, vm_list):
         conn = libvirt.open("qemu:///system")
