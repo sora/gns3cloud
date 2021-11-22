@@ -1,6 +1,7 @@
 <domain type='kvm'>
 	<name>{{ vm_name }}</name>
 	<memory unit='GB'>{{ memory_gb }}</memory>
+	<cpu mode='host-passthrough' />
 	<vcpu>{{ vcpu }}</vcpu>
 	<os>
 		<type arch='x86_64'>hvm</type>

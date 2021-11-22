@@ -24,7 +24,7 @@ def main():
         gns3.build_vm_image(vm_id, vm_config)
         gns3.deploy_vm(vm_id, vm_config)
 
-        time.sleep(180)
+        time.sleep(30)
 
 if __name__ == "__main__":
     main()

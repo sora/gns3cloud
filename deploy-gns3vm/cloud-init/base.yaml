@@ -15,8 +15,8 @@ apt_sources:
         - source: "ppa:gns3/ppa"
 package_upgrade: true
 packages:
-- vim
-- gns3-gui
+- gns3-server
+#- vim
 write_files:
         - path: /etc/apt/apt.conf.d/02proxy
           permissions: 0644
@@ -46,13 +46,33 @@ write_files:
 
                 [Install]
                 WantedBy=multi-user.target
+        - path: /home/ubuntu/gns3_server.conf
+          permissions: 0644
+          owner: root:root
+          content: |
+                [Server]
+                auth = True
+                user = gns3
+                password = madabeta
 
 runcmd:
+        #        - [ apt, -y, purge, ubuntu-advantage-tools ]
+        #        - [ apt, clean ]
+        #        - [ apt, update ]
+        #        - [ apt, -y, upgrade ]
+        #        - [ apt, -y, install, gns3-server ]
         - [ systemctl, enable, gns3.service ]
         - [ systemctl, start, gns3.service ]
         - [ chmod, +x, /usr/bin/ubridge ]
         - [ adduser, gns3, ubridge ]
-        - [ wget, "http://{{ proxy_server.ip }}:8000/GNS3.tar.gz", -O, /home/gns3/GNS3.tar.gz ]
-        - [ rm, -rf, /home/gns3/GNS3 ]
-        - [ tar, zxf, /home/gns3/GNS3.tar.gz, -C, /home/gns3 ]
         - [ systemctl, restart, gns3.service ]
+        - [ mkdir, -p, /home/gns3/.config/GNS3 ]
+        - [ cp, /home/ubuntu/gns3_server.conf, /home/gns3/.config/GNS3/ ]
+        - [ sh, -c, "chown -R gns3:gns3 /home/gns3/.config" ]
+        - [ sh, -c, "chown -R ubuntu:ubuntu /home/ubuntu" ]
+power_state:
+        delay: "+1"
+        mode: reboot
+        message: Bye Bye
+        timeout: 30
+
