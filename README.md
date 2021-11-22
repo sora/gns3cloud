@@ -4,14 +4,14 @@
   - OS: ubuntu 18.04
   - KVM (need Nested VM feature)
 * GNS3 resource Manager: 1 host
-  - OS: ubuntu 18.04
+  - OS: ubuntu 20.04
   - services:
     - apt-cacher-ng server
       - port: 3142
     - GNS3 resource server :Todo
       - port: 443
 * VM: 1~ hosts
-  - OS: ubuntu 18.04
+  - OS: ubuntu 20.04
   - services:
     - GNS3 server
       - port: 3080
